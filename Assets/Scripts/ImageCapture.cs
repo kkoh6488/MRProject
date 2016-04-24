@@ -20,7 +20,7 @@ public class ImageCapture : IImageCapture {
     private string savePath;
 
     public ImageCapture() {
-        savePath = Application.dataPath + "/";
+        savePath = Application.persistentDataPath + "/";
     }
 
     /// <summary>
