@@ -38,6 +38,7 @@ public class InputGUI : MonoBehaviour {
         Rect captureButton = new Rect(Screen.width - buttonSize - 30, Screen.height - buttonSize - 30, buttonSize, buttonSize);
         if (GUI.Button(captureButton, "Capture"))
         {
+            //manager.CaptureImage();
             manager.CaptureImage();
             isImageCaptured = true;
         }

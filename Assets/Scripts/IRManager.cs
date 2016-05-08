@@ -1,5 +1,13 @@
 ﻿using System;
+using System.Net;
+using System.Net.Sockets;
 using UnityEngine;
+
+public enum AppState
+{
+    IDLE = 0,
+    QUERYING = 1,
+}
 
 /// <summary>
 /// Manager class to handle joining of application components together.
@@ -8,8 +16,23 @@ public class IRManager : IRManagerBase {
 
     IImageCapture imgCapture;
 
+    public GameObject queryProgressInd;
+    public ContentManager content;
+
+    // Networking variables
+    public string serverIp = "127.0.0.1";
+    public int port = 12000;
+    Socket sock;
+    IPAddress serverAddr;
+    IPEndPoint endPoint;
+
+    // State variables
+    
+
     void Awake() {
         imgCapture = new ImageCapture();
+        serverAddr = IPAddress.Parse(serverIp);
+        endPoint = new IPEndPoint(serverAddr, port);
     }
 
 	// Use this for initialization
@@ -24,17 +47,77 @@ public class IRManager : IRManagerBase {
         if (Input.GetKeyDown(KeyCode.K))
         {
             imgCapture.StoreScreenshotBuffer(Camera.main);
+        } 
+        else if (Input.GetKeyDown(KeyCode.F))
+        {
+            OnResultReceived();
         }
         #endif
     }
+
+    void OnApplicationQuit()
+    {
+        if (sock != null)
+        {
+            sock.Close();
+        }
+    }
+
+    #region Inspector API
+
+    public override void CaptureImage()
+    {
+        SubmitImageQuery();
+    }
+
+    #endregion
+
+    #region Query functions
 
     /// <summary>
     /// Captures an image and stores it temporarily for saving if needed.
     /// </summary>
     /// <returns>True, if the image was captured successfully.</returns>
-    public override bool CaptureImage() {
-        return imgCapture.StoreScreenshotBuffer(Camera.main);
+    private bool SubmitImageQuery() {
+        bool result = imgCapture.StoreScreenshotBuffer(Camera.main);
+        if (result)
+        {
+            SendCapturedImageQuery(imgCapture.GetScreenshotBufferToBytes());
+            ShowQueryIndicator();
+            currentState = AppState.QUERYING;
+        }
+        return result;
     }
+
+    private void SendCapturedImageQuery(byte[] imgBytes)
+    {
+        // Send packet to server containing jpeg bytes - to be reassembled on other side.
+    }
+
+    private void OnResultReceived()
+    {
+        currentState = AppState.IDLE;
+
+        // Unpack the response packet
+
+        // If no matches
+        HideQueryIndicator();
+
+        // Else
+        content.HandleResult();
+    }
+
+    private void ShowQueryIndicator()
+    {
+        queryProgressInd.SetActive(true);
+    }
+
+    private void HideQueryIndicator()
+    {
+        queryProgressInd.SetActive(false);
+    }
+
+    #endregion
 
     /// <summary>
     /// Saves the stored image to file.

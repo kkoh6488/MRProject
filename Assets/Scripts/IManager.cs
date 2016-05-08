@@ -6,8 +6,7 @@ public interface IManager {
     /// <summary>
     /// Captures an image as defined in this application.
     /// </summary>
-    /// <returns>True, if the image was stored correctly.</returns>
-    bool CaptureImage();
+    void CaptureImage();
 
     /// <summary>
     /// Saves the captured image to a file.

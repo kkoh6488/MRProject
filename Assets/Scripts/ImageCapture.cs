@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.IO;
+using System;
 
 /// <summary>
 /// Handles capture of camera render and output to the file system.
@@ -33,6 +34,7 @@ public class ImageCapture : IImageCapture {
     public bool StoreScreenshotBuffer(Camera cam) {
         rt = new RenderTexture(Width, Height, 24);
         cam.targetTexture = rt;
+        cam.cullingMask = LayerMask.NameToLayer("CameraFeed");
         cam.Render();
         tempTexture = new Texture2D(Width, Height, TextureFormat.ARGB32, false);
         RenderTexture.active = rt;
@@ -40,6 +42,7 @@ public class ImageCapture : IImageCapture {
         cam.targetTexture = null;
         RenderTexture.active = null;
         Debug.Log("Captured image");
+        cam.cullingMask = LayerMask.NameToLayer("Everything");
         return true;
     }
 
@@ -76,5 +79,14 @@ public class ImageCapture : IImageCapture {
         }
         File.WriteAllBytes(outputPath, bytes);
         Debug.Log("Saved to file: " + outputPath);
+    }
+
+    public byte[] GetScreenshotBufferToBytes()
+    {
+        if (tempTexture != null)
+        {
+            return tempTexture.EncodeToJPG();
+        }
+        return null;
     }
 }
