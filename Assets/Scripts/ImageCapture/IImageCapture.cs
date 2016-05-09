@@ -23,4 +23,6 @@ public interface IImageCapture
     /// </summary>
     /// <returns></returns>
     byte[] GetScreenshotBufferToBytes();
+
+    string GetScreenshotBufferToJPGBase64();
 }

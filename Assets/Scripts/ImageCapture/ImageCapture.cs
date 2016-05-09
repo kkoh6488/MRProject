@@ -89,4 +89,15 @@ public class ImageCapture : IImageCapture {
         }
         return null;
     }
+
+    public string GetScreenshotBufferToJPGBase64()
+    {
+        if (tempTexture != null)
+        {
+            byte[] jpgBytes = tempTexture.EncodeToJPG();
+            Debug.Log("Jpg bytes length: " + jpgBytes.Length);
+            return Convert.ToBase64String(jpgBytes).Replace(" ", "");
+        }
+        return null;
+    }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using UnityEngine;
 
 public enum AppState
@@ -21,7 +23,8 @@ public class IRManager : IRManagerBase {
 
     // Networking variables
     public string serverIp = "127.0.0.1";
-    public int port = 12000;
+    public int port = 8080;
+    string uri;
     Socket sock;
     IPAddress serverAddr;
     IPEndPoint endPoint;
@@ -33,10 +36,11 @@ public class IRManager : IRManagerBase {
         imgCapture = new ImageCapture();
         serverAddr = IPAddress.Parse(serverIp);
         endPoint = new IPEndPoint(serverAddr, port);
+        uri = string.Format("http://{0}:{1}", serverIp, port);
     }
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
 	
 	}
 
@@ -82,16 +86,40 @@ public class IRManager : IRManagerBase {
         bool result = imgCapture.StoreScreenshotBuffer(Camera.main);
         if (result)
         {
-            SendCapturedImageQuery(imgCapture.GetScreenshotBufferToBytes());
+            string encoded = imgCapture.GetScreenshotBufferToJPGBase64();
+            string response = SendCapturedImageQuery(encoded);
             ShowQueryIndicator();
             currentState = AppState.QUERYING;
+            if (response.Equals("[]"))
+            {
+                Debug.Log("No results found.");
+                SendCapturedImagePostRequest(encoded, "test");
+            }
         }
         return result;
     }
 
-    private void SendCapturedImageQuery(byte[] imgBytes)
+    private string SendCapturedImageQuery(string encodedImg)
     {
         // Send packet to server containing jpeg bytes - to be reassembled on other side.
+        Debug.Log("Sending img query");
+        Debug.Log(encodedImg);
+        string json = "{\"photorequest\": {\"name\": \"none\", \"imageData\": \"" + encodedImg +"\"}}";
+        Debug.Log("Json: " + json);
+        WebClient client = new WebClient();
+        client.Headers[HttpRequestHeader.ContentType] = "application/json";
+        string result = client.UploadString(uri + "/query", "POST", json);
+        Debug.Log(result);
+        return result;
+    }
+
+    private void SendCapturedImagePostRequest(string encodedImg, string name)
+    {
+        string json = "{\"photorequest\": {\"name\": \"" + name + "\", \"imageData\": \"" + encodedImg + "\"}}";
+        WebClient client = new WebClient();
+        client.Headers[HttpRequestHeader.ContentType] = "application/json";
+        string result = client.UploadString(uri + "/submit", "POST", json);
+        Debug.Log("Post result: " + result);
     }
 
     private void OnResultReceived()
@@ -109,7 +137,7 @@ public class IRManager : IRManagerBase {
         string title = "Name";
         string subtitle = "Object type";
         string description = "Some long description Some long description Some long description Some long description Some long description Some long description Some long description Some long description";
-        string img = "imgurl";
+        string img = "https://www.google.com.au/url?sa=i&rct=j&q=&esrc=s&source=imgres&cd=&cad=rja&uact=8&ved=0ahUKEwju6LGNhczMAhUFmZQKHVRtAxsQjRwIBw&url=https%3A%2F%2Fplus.google.com%2Fu%2F0%2F116899029375914044550&psig=AFQjCNEBsosGXnX2-PkBavVBGwKnZPPCPg&ust=1462850551646464";
         QueryResult result = new QueryResult(title, subtitle, description, img);
         content.HandleResult(result);
     }
