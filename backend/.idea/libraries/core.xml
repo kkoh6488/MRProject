@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="core">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/lucene-6.0.0/core" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file://$PROJECT_DIR$/lucene-6.0.0/core" recursive="false" />
+  </library>
+</component>

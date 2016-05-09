@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="lire">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Lire-1.0b2/lire.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

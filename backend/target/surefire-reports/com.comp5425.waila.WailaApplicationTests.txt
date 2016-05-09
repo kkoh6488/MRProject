@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.comp5425.waila.WailaApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.301 sec - in com.comp5425.waila.WailaApplicationTests
