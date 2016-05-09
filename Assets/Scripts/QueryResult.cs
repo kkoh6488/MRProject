@@ -20,7 +20,7 @@ public class QueryResult {
         fields = new Dictionary<string, string>();
     }
 
-    void SetField(string key, string value)
+    public void SetField(string key, string value)
     {
         fields.Add(key, value);
     }

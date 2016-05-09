@@ -66,7 +66,7 @@ public class ContentManager : AppMonoBehaviour {
         {
             contentSize += new Vector2(0, _textRowPx);
         }
-        contentSize += new Vector2(0, _textRowPx * (q.fields.Count * 2));
+        contentSize += new Vector2(0, _textRowPx * (q.fields.Count));
         bodyScrollContent.sizeDelta = contentSize;
         Debug.Log("Setting content size as " + contentSize);
     }

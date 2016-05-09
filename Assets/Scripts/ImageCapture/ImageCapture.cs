@@ -81,6 +81,10 @@ public class ImageCapture : IImageCapture {
         Debug.Log("Saved to file: " + outputPath);
     }
 
+    /// <summary>
+    /// Gets the buffered screenshot in JPG format as a byte array.
+    /// </summary>
+    /// <returns>A byte array of the JPG screenshot.</returns>
     public byte[] GetScreenshotBufferToBytes()
     {
         if (tempTexture != null)
@@ -90,6 +94,10 @@ public class ImageCapture : IImageCapture {
         return null;
     }
 
+    /// <summary>
+    /// Gets the buffered screenshot in JPG format as a base 64 encoded string.
+    /// </summary>
+    /// <returns>Base 64 encoding of the JPG screenshot.</returns>
     public string GetScreenshotBufferToJPGBase64()
     {
         if (tempTexture != null)
