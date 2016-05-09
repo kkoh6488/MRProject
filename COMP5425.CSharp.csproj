@@ -65,15 +65,18 @@
   <ItemGroup>
     <Compile Include="Assets\RotatingTouchCube.cs" />
     <Compile Include="Assets\Scripts\AppMonoBehaviour.cs" />
-    <Compile Include="Assets\Scripts\CameraTexture.cs" />
     <Compile Include="Assets\Scripts\CaptureButton.cs" />
     <Compile Include="Assets\Scripts\ContentManager.cs" />
-    <Compile Include="Assets\Scripts\IImageCapture.cs" />
+    <Compile Include="Assets\Scripts\ContentPanel.cs" />
+    <Compile Include="Assets\Scripts\GoogleGraphPanel.cs" />
     <Compile Include="Assets\Scripts\IManager.cs" />
     <Compile Include="Assets\Scripts\IRManager.cs" />
     <Compile Include="Assets\Scripts\IRManagerBase.cs" />
-    <Compile Include="Assets\Scripts\ImageCapture.cs" />
+    <Compile Include="Assets\Scripts\ImageCapture\CameraTexture.cs" />
+    <Compile Include="Assets\Scripts\ImageCapture\IImageCapture.cs" />
+    <Compile Include="Assets\Scripts\ImageCapture\ImageCapture.cs" />
     <Compile Include="Assets\Scripts\InputGUI.cs" />
+    <Compile Include="Assets\Scripts\QueryResult.cs" />
     <Compile Include="Assets\Scripts\SelectorButton.cs" />
     <Compile Include="Assets\Scripts\SelectorGroup.cs" />
     <Compile Include="Assets\TouchManager.cs" />

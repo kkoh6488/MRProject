@@ -9,6 +9,7 @@ public class ContentManager : AppMonoBehaviour {
     public RectTransform bodyRT;
     public RectTransform topBarRT;
     public Vector2 bodyDisplayPos = Vector2.zero;
+    public ContentPanel googleGraphPanel;
 
     // Animation variables
     private Vector2 _bodyRTOffscreen;
@@ -17,8 +18,14 @@ public class ContentManager : AppMonoBehaviour {
     private Vector2 _currVel;
     private float _smoothTime = 0.3f;
 
-	// Use this for initialization
-	void Start () {
+    // Content size variables
+    public RectTransform bodyScrollContent;
+    private float _imgSizePx = 105f;
+    private float _descriptionSizePx = 105f;
+    private float _textRowPx = 32f;
+
+    // Use this for initialization
+    void Start () {
         _bodyRTOffscreen = bodyRT.anchoredPosition;
 	
 	}
@@ -31,11 +38,37 @@ public class ContentManager : AppMonoBehaviour {
         }
 	}
 
-    public void HandleResult()
+    public void HandleResult(QueryResult q)
     {
         _isSlidingIn = true;
         bodyRT.anchoredPosition = _bodyRTOffscreen;
         topBarRT.anchoredPosition = _bodyRTOffscreen;
+        AdjustContentPanelHeight(q);
+        googleGraphPanel.SetDisplayContent(q);
+    }
+
+    public void AdjustContentPanelHeight(QueryResult q)
+    {
+        Vector2 contentSize = new Vector2(bodyScrollContent.sizeDelta.x, 0);
+        if (q.HasImage())
+        {
+            contentSize += new Vector2(0, _imgSizePx);
+        }
+        if (q.HasTitle())
+        {
+            contentSize += new Vector2(0, _textRowPx);
+        }
+        if (q.HasDescription())
+        {
+            contentSize += new Vector2(0, _descriptionSizePx);
+        }
+        if (q.HasSubtitle())
+        {
+            contentSize += new Vector2(0, _textRowPx);
+        }
+        contentSize += new Vector2(0, _textRowPx * (q.fields.Count * 2));
+        bodyScrollContent.sizeDelta = contentSize;
+        Debug.Log("Setting content size as " + contentSize);
     }
 
     private void SlideInResults()

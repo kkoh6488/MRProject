@@ -104,7 +104,22 @@ public class IRManager : IRManagerBase {
         HideQueryIndicator();
 
         // Else
-        content.HandleResult();
+        // Make the query result
+        // Fake data
+        string title = "Name";
+        string subtitle = "Object type";
+        string description = "Some long description Some long description Some long description Some long description Some long description Some long description Some long description Some long description";
+        string img = "imgurl";
+        QueryResult result = new QueryResult(title, subtitle, description, img);
+        content.HandleResult(result);
+    }
+
+    /// <summary>
+    /// Manually label the last sent query image with specified text.
+    /// </summary>
+    private void LabelImage()
+    {
+
     }
 
     private void ShowQueryIndicator()
