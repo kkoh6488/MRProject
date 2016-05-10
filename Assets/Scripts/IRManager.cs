@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Net;
-using System.Net.Sockets;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum AppState
 {
     IDLE = 0,
-    QUERYING = 1,
+    QUERY = 1,
+    SUBMIT = 2,
 }
 
 /// <summary>
@@ -17,7 +18,13 @@ public class IRManager : IRManagerBase {
     IImageCapture imgCapture;
 
     public GameObject queryProgressInd;
+    public GameObject alertMsg;
+    public GameObject submitConfirmation;
     public ContentManager content;
+    private string _alertMsg = "";
+    private bool _isAlertShown = false;
+    private float _alertTimer = 3f;
+    private float _elapsedTime;
 
     // Networking variables
     public string serverIp = "127.0.0.1";
@@ -51,13 +58,27 @@ public class IRManager : IRManagerBase {
         } 
         else if (Input.GetKeyDown(KeyCode.F))
         {
-            OnResultReceived();
+            TestFakeReceivedData();
         }
+        HandleProgressIndicator();
         #endif
     }
 
-    void OnApplicationQuit()
+    void HandleProgressIndicator()
     {
+        if (currentState == AppState.QUERY)
+        {
+            ShowProgressIndicator("Searching...");
+        }
+        else if (currentState == AppState.SUBMIT)
+        {
+            ShowProgressIndicator("Indexing");
+        }
+        else 
+        {
+            HideProgressIndicator();
+            HideAlert();
+        }
     }
 
     #region Inspector API
@@ -65,6 +86,14 @@ public class IRManager : IRManagerBase {
     public override void CaptureImage()
     {
         SubmitImageQuery();
+        ShowAlert("Querying...");
+    }
+
+    public void SendSubmitQuery(string objectName)
+    {
+        SendCapturedImagePostRequest(_lastEncoded, objectName);
+        currentState = AppState.QUERY;
+        ShowAlert("Indexing...");
     }
 
     #endregion
@@ -75,16 +104,18 @@ public class IRManager : IRManagerBase {
     /// Captures an image and sends it to the query server.
     /// </summary>
     /// <returns>True, if the image was captured successfully.</returns>
-    private bool SubmitImageQuery() {
+    private void SubmitImageQuery() {
         bool result = imgCapture.StoreScreenshotBuffer(Camera.main);
         if (result)
         {
             _lastEncoded = imgCapture.GetScreenshotBufferToJPGBase64();
-            string response = SendCapturedImageQuery(_lastEncoded);
-            ShowQueryIndicator();
-            currentState = AppState.QUERYING;
+            SendCapturedImageQuery(_lastEncoded);
+            currentState = AppState.QUERY;
         }
-        return result;
+        else
+        {
+            throw new Exception("An error occurred getting the screenshot.");
+        }
     }
 
     /// <summary>
@@ -103,21 +134,36 @@ public class IRManager : IRManagerBase {
         client.UploadStringCompleted += new UploadStringCompletedEventHandler(QueryCompleteCallback);
         client.Headers[HttpRequestHeader.ContentType] = "application/json";
         client.UploadStringAsync(queryUri, "POST", json);
-        //string result = client.UploadString(queryUri, "POST", json);
-        //Debug.Log(result);
-        //return result;
         return "";
     }
 
     private void QueryCompleteCallback(object sender, UploadStringCompletedEventArgs e)
     {
+        currentState = AppState.IDLE;
         string response = e.Result;
-        Debug.Log("Got response back " + response);
-        if (response.Equals("[]"))
+        if (e.Result == null)
         {
-            Debug.Log("No results found.");
-            SendCapturedImagePostRequest(_lastEncoded, "test");
+            Debug.Log("Server error");
+            return;
         }
+        try
+        {
+            if (response.Equals("[]"))
+            {
+                Debug.Log("No results found.");
+                ConfirmSubmitQuery();
+            }
+            Debug.Log(response == null);
+        }
+        catch (Exception ex)
+        {
+            Debug.Log(ex.StackTrace);
+        }
+    }
+
+    private void ConfirmSubmitQuery()
+    {
+        submitConfirmation.SetActive(true);
     }
 
     /// <summary>
@@ -137,18 +183,19 @@ public class IRManager : IRManagerBase {
 
     private void SubmitCompleteCallback(object sender, UploadStringCompletedEventArgs e)
     {
+        currentState = AppState.IDLE;
         string response = e.Result;
         Debug.Log("Post result: " + response);
     }
 
-    private void OnResultReceived()
+    private void TestFakeReceivedData()
     {
         currentState = AppState.IDLE;
 
         // Unpack the response packet
 
         // If no matches
-        HideQueryIndicator();
+        HideProgressIndicator();
 
         // Else
         // Make the query result
@@ -163,22 +210,27 @@ public class IRManager : IRManagerBase {
         content.HandleResult(result);
     }
 
-    /// <summary>
-    /// Manually label the last sent query image with specified text.
-    /// </summary>
-    private void LabelImage()
-    {
-
-    }
-
-    private void ShowQueryIndicator()
+    private void ShowProgressIndicator(string msg)
     {
         queryProgressInd.SetActive(true);
     }
 
-    private void HideQueryIndicator()
+    private void HideProgressIndicator()
     {
         queryProgressInd.SetActive(false);
+    }
+
+    private void ShowAlert(string msg)
+    {
+        _elapsedTime = 0f;
+        _isAlertShown = true;
+        alertMsg.SetActive(true);
+        alertMsg.GetComponent<Text>().text = msg;
+    }
+
+    private void HideAlert()
+    {
+        alertMsg.gameObject.SetActive(false);
     }
 
     #endregion

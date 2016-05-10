@@ -2,10 +2,10 @@
 
 public class AppMonoBehaviour : MonoBehaviour {
 
-    private IRManagerBase manager;
+    protected IRManager manager;
 
     void Awake()
     {
-        manager = GameObject.FindObjectOfType<IRManagerBase>();
+        manager = GameObject.FindObjectOfType<IRManager>();
     }
 }
