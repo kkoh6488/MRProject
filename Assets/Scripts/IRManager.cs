@@ -31,6 +31,8 @@ public class IRManager : IRManagerBase {
     private float _elapsedTime;
     private Queue<string> _alerts;
 
+    private IParser<QueryResult> _parser;
+
     // Networking variables
     public string serverIp = "127.0.0.1";
     public int port = 8080;
@@ -46,6 +48,7 @@ public class IRManager : IRManagerBase {
         queryUri = new Uri(uri + "/query");
         submitUri = new Uri(uri + "/submit");
         knowledgeUri = new Uri(uri + "/knowledge");
+        _parser = new ResultParser();
     }
 
     // Use this for initialization
@@ -61,9 +64,9 @@ public class IRManager : IRManagerBase {
         {
             imgCapture.StoreScreenshotBuffer(Camera.main);
         } 
-        else if (Input.GetKeyDown(KeyCode.F))
+        else if (Input.GetKeyDown(KeyCode.G))
         {
-            TestFakeReceivedData();
+            SendKnowledgeQuery("Apple");
         }
         HandleStateWindows();
         #endif
@@ -78,7 +81,6 @@ public class IRManager : IRManagerBase {
                 ShowObject(queryProgressInd);
                 break;
             case AppState.SUBMIT:
-                //HideObject(submitConfirmation);
                 break;
             case AppState.SUBMITCONFIRM:
                 HideObject(alertMsg);
@@ -121,7 +123,6 @@ public class IRManager : IRManagerBase {
         if (_alerts.Count > 0)
         {
             _alerts.Clear();
-            _elapsedTime = 0;
         }
         ShowAlert(msg);
         _elapsedTime += Time.deltaTime;
@@ -155,6 +156,38 @@ public class IRManager : IRManagerBase {
     #endregion
 
     #region Query functions
+
+    /// <summary>
+    /// Sends a knowledge query to the server.
+    /// </summary>
+    /// <param name="entity"></param>
+    private void SendKnowledgeQuery(string entity)
+    {
+        Debug.Log("Sending knowledge query");      
+        WebClient client = new WebClient();
+        Uri queryUri = new Uri(knowledgeUri + "?entity=" + entity);
+        client.DownloadStringAsync(queryUri);
+        client.DownloadStringCompleted += new DownloadStringCompletedEventHandler(KnowledgeQueryCallback);
+    }
+
+    /// <summary>
+    /// Callback for a knowledge search query.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void KnowledgeQueryCallback(object sender, DownloadStringCompletedEventArgs e)
+    {
+        if (e.Result == null)
+        {
+            _alertMsg = "The server could not be contacted";
+            _elapsedTime = 0;
+            currentState = AppState.ERROR;
+        }
+        else
+        {
+            QueryResult[] results = _parser.ParseGroup(e.Result);
+        }
+    }
 
     /// <summary>
     /// Captures an image and sends it to the query server.
@@ -200,6 +233,7 @@ public class IRManager : IRManagerBase {
         if (e.Result == null)
         {
             _alertMsg = "The server could not be contacted";
+            _elapsedTime = 0;
             currentState = AppState.ERROR;
             return;
         }
@@ -237,11 +271,15 @@ public class IRManager : IRManagerBase {
         string json = "{\"photorequest\": {\"name\": \"" + name + "\", \"imageData\": \"" + encodedImg + "\"}}";
         WebClient client = new WebClient();
         client.Headers[HttpRequestHeader.ContentType] = "application/json";
-        //string result = client.UploadString(submitUri, "POST", json);
         client.UploadStringCompleted += new UploadStringCompletedEventHandler(SubmitCompleteCallback);
         client.UploadStringAsync(submitUri, "POST", json);
     }
 
+    /// <summary>
+    /// Callback for completion of an image index submit request.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void SubmitCompleteCallback(object sender, UploadStringCompletedEventArgs e)
     {
         currentState = AppState.IDLE;
@@ -253,28 +291,6 @@ public class IRManager : IRManagerBase {
             return;
         }
         Debug.Log("Post result: " + response);
-    }
-
-    private void TestFakeReceivedData()
-    {
-        currentState = AppState.IDLE;
-
-        // Unpack the response packet
-
-        // If no matches
-        HideObject(queryProgressInd);
-
-        // Else
-        // Make the query result
-        // Fake data
-        string title = "Name";
-        string subtitle = "Object type";
-        string description = "Some long description Some long description Some long description Some long description Some long description Some long description Some long description Some long description";
-        string img = "https://www.google.com.au/url?sa=i&rct=j&q=&esrc=s&source=imgres&cd=&cad=rja&uact=8&ved=0ahUKEwju6LGNhczMAhUFmZQKHVRtAxsQjRwIBw&url=https%3A%2F%2Fplus.google.com%2Fu%2F0%2F116899029375914044550&psig=AFQjCNEBsosGXnX2-PkBavVBGwKnZPPCPg&ust=1462850551646464";
-        QueryResult result = new QueryResult(title, subtitle, description, img);
-        result.SetField("Field1", "Some value1");
-        result.SetField("This is field 2", "value2");
-        content.HandleResult(result);
     }
 
     private void ShowAlert(string msg)
