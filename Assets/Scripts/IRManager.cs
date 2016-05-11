@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,7 +8,9 @@ public enum AppState
 {
     IDLE = 0,
     QUERY = 1,
-    SUBMIT = 2,
+    SUBMITCONFIRM = 2,
+    SUBMIT = 3,
+    ERROR = 4,
 }
 
 /// <summary>
@@ -19,12 +22,14 @@ public class IRManager : IRManagerBase {
 
     public GameObject queryProgressInd;
     public GameObject alertMsg;
-    public GameObject submitConfirmation;
+    public GameObject submitInput;
     public ContentManager content;
+
     private string _alertMsg = "";
     private bool _isAlertShown = false;
     private float _alertTimer = 3f;
     private float _elapsedTime;
+    private Queue<string> _alerts;
 
     // Networking variables
     public string serverIp = "127.0.0.1";
@@ -45,7 +50,7 @@ public class IRManager : IRManagerBase {
 
     // Use this for initialization
     void Start () {
-	
+        _alerts = new Queue<string>();
 	}
 
     // Update is called once per frame
@@ -60,24 +65,70 @@ public class IRManager : IRManagerBase {
         {
             TestFakeReceivedData();
         }
-        HandleProgressIndicator();
+        HandleStateWindows();
         #endif
     }
 
-    void HandleProgressIndicator()
+    void HandleStateWindows()
     {
-        if (currentState == AppState.QUERY)
+        switch (currentState)
         {
-            ShowProgressIndicator("Searching...");
+            case AppState.QUERY:
+                HideObject(submitInput);
+                ShowObject(queryProgressInd);
+                break;
+            case AppState.SUBMIT:
+                //HideObject(submitConfirmation);
+                break;
+            case AppState.SUBMITCONFIRM:
+                HideObject(alertMsg);
+                HideObject(queryProgressInd);
+                ShowObject(submitInput);
+                break;
+            case AppState.IDLE:
+                HideObject(queryProgressInd);
+                HideObject(submitInput);
+                HandleAlerts();
+                break;
+            case AppState.ERROR:
+                HideObject(queryProgressInd);
+                OverrideAlert(_alertMsg);
+                break;
         }
-        else if (currentState == AppState.SUBMIT)
+    }
+
+    void HandleAlerts()
+    {
+        if (_isAlertShown)
         {
-            ShowProgressIndicator("Indexing");
+            _elapsedTime += Time.deltaTime;
+            if (_elapsedTime > _alertTimer)
+            {
+                HideObject(alertMsg);
+                _isAlertShown = false;
+            }
         }
-        else 
+        else if (!_isAlertShown && _alerts.Count > 0)
         {
-            HideProgressIndicator();
-            HideAlert();
+            ShowAlert(_alerts.Dequeue());
+            _isAlertShown = true;
+            _elapsedTime = 0;
+        }
+    }
+
+    void OverrideAlert(string msg)
+    {
+        if (_alerts.Count > 0)
+        {
+            _alerts.Clear();
+            _elapsedTime = 0;
+        }
+        ShowAlert(msg);
+        _elapsedTime += Time.deltaTime;
+        if (_elapsedTime > _alertTimer)
+        {
+            currentState = AppState.IDLE;
+            HideObject(alertMsg);
         }
     }
 
@@ -91,9 +142,14 @@ public class IRManager : IRManagerBase {
 
     public void SendSubmitQuery(string objectName)
     {
-        SendCapturedImagePostRequest(_lastEncoded, objectName);
         currentState = AppState.QUERY;
+        SendCapturedImagePostRequest(_lastEncoded, objectName);
         ShowAlert("Indexing...");
+    }
+
+    public void CancelSubmitRequest()
+    {
+        currentState = AppState.IDLE;
     }
 
     #endregion
@@ -114,6 +170,7 @@ public class IRManager : IRManagerBase {
         }
         else
         {
+            _alerts.Enqueue("An error occurred getting the screenshot.");
             throw new Exception("An error occurred getting the screenshot.");
         }
     }
@@ -139,11 +196,11 @@ public class IRManager : IRManagerBase {
 
     private void QueryCompleteCallback(object sender, UploadStringCompletedEventArgs e)
     {
-        currentState = AppState.IDLE;
         string response = e.Result;
         if (e.Result == null)
         {
-            Debug.Log("Server error");
+            _alertMsg = "The server could not be contacted";
+            currentState = AppState.ERROR;
             return;
         }
         try
@@ -151,9 +208,8 @@ public class IRManager : IRManagerBase {
             if (response.Equals("[]"))
             {
                 Debug.Log("No results found.");
-                ConfirmSubmitQuery();
+                currentState = AppState.SUBMITCONFIRM;
             }
-            Debug.Log(response == null);
         }
         catch (Exception ex)
         {
@@ -161,9 +217,14 @@ public class IRManager : IRManagerBase {
         }
     }
 
-    private void ConfirmSubmitQuery()
+    private void ShowObject(GameObject go)
     {
-        submitConfirmation.SetActive(true);
+        go.SetActive(true);
+    }
+
+    private void HideObject(GameObject go)
+    {
+        go.SetActive(false);
     }
 
     /// <summary>
@@ -185,6 +246,12 @@ public class IRManager : IRManagerBase {
     {
         currentState = AppState.IDLE;
         string response = e.Result;
+        if (response.Contains("The server has encountered an error."))
+        {
+            _alertMsg = response;
+            currentState = AppState.ERROR;
+            return;
+        }
         Debug.Log("Post result: " + response);
     }
 
@@ -195,7 +262,7 @@ public class IRManager : IRManagerBase {
         // Unpack the response packet
 
         // If no matches
-        HideProgressIndicator();
+        HideObject(queryProgressInd);
 
         // Else
         // Make the query result
@@ -210,27 +277,11 @@ public class IRManager : IRManagerBase {
         content.HandleResult(result);
     }
 
-    private void ShowProgressIndicator(string msg)
-    {
-        queryProgressInd.SetActive(true);
-    }
-
-    private void HideProgressIndicator()
-    {
-        queryProgressInd.SetActive(false);
-    }
-
     private void ShowAlert(string msg)
     {
-        _elapsedTime = 0f;
         _isAlertShown = true;
         alertMsg.SetActive(true);
         alertMsg.GetComponent<Text>().text = msg;
-    }
-
-    private void HideAlert()
-    {
-        alertMsg.gameObject.SetActive(false);
     }
 
     #endregion

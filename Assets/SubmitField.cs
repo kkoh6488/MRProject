@@ -14,9 +14,9 @@ public class SubmitField : AppMonoBehaviour {
     {
         if (IsInputValid())
         {
+            submitInput.SetActive(false);
             manager.SendSubmitQuery(labelInput.text);
             HideValidateDialog();
-            submitInput.SetActive(false);
         }
     }
 
