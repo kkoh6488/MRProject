@@ -5,6 +5,7 @@
 /// </summary>
 public class QueryResult {
 
+    public string id { get; private set; }
     public string title { get; private set; }
     public string subtitle { get; private set; }
     public string imgUrl { get; private set; }
@@ -13,7 +14,7 @@ public class QueryResult {
     public float score { get; private set; }
     public Dictionary<string, string> fields { get; private set; }
 
-    public QueryResult(string title, string subtitle, string description, string imgUrl, string wikiUrl, float score)
+    public QueryResult(string id, string title, string subtitle, string description, string imgUrl, string wikiUrl, float score)
     {
         this.title = title;
         this.subtitle = subtitle;

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
-using UnityEngine.UI;
 
 public enum AppState
 {
@@ -19,17 +17,8 @@ public enum AppState
 public class IRManager : IRManagerBase {
 
     IImageCapture imgCapture;
-
-    public GameObject queryProgressInd;
-    public GameObject alertMsg;
-    public GameObject submitInput;
+    public WindowManager window;
     public ContentManager content;
-
-    private string _alertMsg = "";
-    private bool _isAlertShown = false;
-    private float _alertTimer = 3f;
-    private float _elapsedTime;
-    private Queue<string> _alerts;
 
     private IParser<QueryResult> _parser;
 
@@ -53,7 +42,6 @@ public class IRManager : IRManagerBase {
 
     // Use this for initialization
     void Start () {
-        _alerts = new Queue<string>();
 	}
 
     // Update is called once per frame
@@ -68,69 +56,7 @@ public class IRManager : IRManagerBase {
         {
             SendKnowledgeQuery("Apple");
         }
-        HandleStateWindows();
         #endif
-    }
-
-    void HandleStateWindows()
-    {
-        switch (currentState)
-        {
-            case AppState.QUERY:
-                HideObject(submitInput);
-                ShowObject(queryProgressInd);
-                break;
-            case AppState.SUBMIT:
-                break;
-            case AppState.SUBMITCONFIRM:
-                HideObject(alertMsg);
-                HideObject(queryProgressInd);
-                ShowObject(submitInput);
-                break;
-            case AppState.IDLE:
-                HideObject(queryProgressInd);
-                HideObject(submitInput);
-                HandleAlerts();
-                break;
-            case AppState.ERROR:
-                HideObject(queryProgressInd);
-                OverrideAlert(_alertMsg);
-                break;
-        }
-    }
-
-    void HandleAlerts()
-    {
-        if (_isAlertShown)
-        {
-            _elapsedTime += Time.deltaTime;
-            if (_elapsedTime > _alertTimer)
-            {
-                HideObject(alertMsg);
-                _isAlertShown = false;
-            }
-        }
-        else if (!_isAlertShown && _alerts.Count > 0)
-        {
-            ShowAlert(_alerts.Dequeue());
-            _isAlertShown = true;
-            _elapsedTime = 0;
-        }
-    }
-
-    void OverrideAlert(string msg)
-    {
-        if (_alerts.Count > 0)
-        {
-            _alerts.Clear();
-        }
-        ShowAlert(msg);
-        _elapsedTime += Time.deltaTime;
-        if (_elapsedTime > _alertTimer)
-        {
-            currentState = AppState.IDLE;
-            HideObject(alertMsg);
-        }
     }
 
     #region Inspector API
@@ -138,14 +64,14 @@ public class IRManager : IRManagerBase {
     public override void CaptureImage()
     {
         SubmitImageQuery();
-        ShowAlert("Querying...");
+        window.SetAlert("Querying...");
     }
 
     public void SendSubmitQuery(string objectName)
     {
         currentState = AppState.QUERY;
         SendCapturedImagePostRequest(_lastEncoded, objectName);
-        ShowAlert("Indexing...");
+        window.SetAlert("Indexing...");
     }
 
     public void CancelSubmitRequest()
@@ -179,13 +105,13 @@ public class IRManager : IRManagerBase {
     {
         if (e.Result == null)
         {
-            _alertMsg = "The server could not be contacted";
-            _elapsedTime = 0;
+            window.SetAlert("The server could not be contacted");
             currentState = AppState.ERROR;
         }
         else
         {
             QueryResult[] results = _parser.ParseGroup(e.Result);
+            content.HandleResults(results);
         }
     }
 
@@ -203,8 +129,7 @@ public class IRManager : IRManagerBase {
         }
         else
         {
-            _alerts.Enqueue("An error occurred getting the screenshot.");
-            throw new Exception("An error occurred getting the screenshot.");
+            window.SetAlert("The screenshot could not be captured.");
         }
     }
 
@@ -229,16 +154,15 @@ public class IRManager : IRManagerBase {
 
     private void QueryCompleteCallback(object sender, UploadStringCompletedEventArgs e)
     {
-        string response = e.Result;
         if (e.Result == null)
         {
-            _alertMsg = "The server could not be contacted";
-            _elapsedTime = 0;
+            window.SetAlert("The server could not be contacted");
             currentState = AppState.ERROR;
             return;
         }
         try
         {
+            string response = e.Result;
             if (response.Equals("[]"))
             {
                 Debug.Log("No results found.");
@@ -249,16 +173,6 @@ public class IRManager : IRManagerBase {
         {
             Debug.Log(ex.StackTrace);
         }
-    }
-
-    private void ShowObject(GameObject go)
-    {
-        go.SetActive(true);
-    }
-
-    private void HideObject(GameObject go)
-    {
-        go.SetActive(false);
     }
 
     /// <summary>
@@ -286,18 +200,11 @@ public class IRManager : IRManagerBase {
         string response = e.Result;
         if (response.Contains("The server has encountered an error."))
         {
-            _alertMsg = response;
+            window.SetAlert(response);
             currentState = AppState.ERROR;
             return;
         }
         Debug.Log("Post result: " + response);
-    }
-
-    private void ShowAlert(string msg)
-    {
-        _isAlertShown = true;
-        alertMsg.SetActive(true);
-        alertMsg.GetComponent<Text>().text = msg;
     }
 
     #endregion

@@ -23,6 +23,7 @@ public class ResultParser : IParser<QueryResult>
             {
                 Debug.Log(q.ToString());
             }
+            return results;
             //JObject first = (JObject)joResponse[0];
             //QueryResult firstResult = jsonToResult((JObject) first["result"], score);
         }
@@ -39,32 +40,33 @@ public class ResultParser : IParser<QueryResult>
         try
         {
             //Debug.Log("Parsing JToken:" + obj.ToString());
-            string name = obj["name"].ToString();
+            string id = obj.Value<string>("@id");
+            string name = obj.Value<string>("name");
             string description = "", longDescr = "", imgUrl = "", wikiUrl = "";
             if (obj["description"] != null)
             {
-                description = obj["description"].ToString();
+                description = obj.Value<string>("description");
             }
             
             if (obj["detailedDescription"] != null)
             {
                 if (obj["detailedDescription"]["articleBody"] != null)
                 {
-                    longDescr = obj["detailedDescription"]["articleBody"].ToString();
+                    longDescr = obj.Value<JToken>("detailedDescription").Value<string>("articleBody");
                 }
                 if (obj["detailedDescription"]["url"] != null)
                 {
-                    wikiUrl = obj["detailedDescription"]["url"].ToString();
+                    wikiUrl = obj.Value<JToken>("detailedDescription").Value<string>("url");
                 }
             }
             if (obj["image"] != null)
             {
                 if (obj["image"]["contentUrl"] != null)
                 {
-                    imgUrl = obj["image"]["contentUrl"].ToString();
+                    imgUrl = obj["image"].Value<string>("contentUrl");
                 }
             }
-            return new QueryResult(name, description, longDescr, imgUrl, wikiUrl, score);
+            return new QueryResult(id, name, description, longDescr, imgUrl, wikiUrl, score);
             
         }
         catch (Exception e)

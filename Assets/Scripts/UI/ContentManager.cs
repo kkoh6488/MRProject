@@ -21,8 +21,11 @@ public class ContentManager : AppMonoBehaviour {
     // Content size variables
     public RectTransform bodyScrollContent;
     private float _imgSizePx = 105f;
-    private float _descriptionSizePx = 105f;
+    private float _descriptionSizePx = 130f;
     private float _textRowPx = 32f;
+
+    private QueryResult[] _lastResults;
+    private bool _newResults = false;
 
     // Use this for initialization
     void Start () {
@@ -32,13 +35,25 @@ public class ContentManager : AppMonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        if (_newResults)
+        {
+            DisplayMainResult(_lastResults[0]);
+            SlideInResults();
+            _newResults = false;
+        }
 	    if (_isSlidingIn)
         {
             SlideInResults();
         }
 	}
 
-    public void HandleResult(QueryResult q)
+    public void HandleResults(QueryResult[] results)
+    {
+        _lastResults = results;
+        _newResults = true;
+    }
+
+    private void DisplayMainResult(QueryResult q)
     {
         _isSlidingIn = true;
         bodyRT.anchoredPosition = _bodyRTOffscreen;
@@ -47,7 +62,7 @@ public class ContentManager : AppMonoBehaviour {
         googleGraphPanel.SetDisplayContent(q);
     }
 
-    public void AdjustContentPanelHeight(QueryResult q)
+    private void AdjustContentPanelHeight(QueryResult q)
     {
         Vector2 contentSize = new Vector2(bodyScrollContent.sizeDelta.x, 0);
         if (q.HasImage())
