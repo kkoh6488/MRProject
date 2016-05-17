@@ -2,3 +2,4 @@ Library/
 Temp/
 *.sln
 .vs/
+.DS_Store
