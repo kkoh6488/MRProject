@@ -52,6 +52,7 @@ public class SubmitController {
     public List<Object> query(@RequestBody PhotoRequest pr) {
         try {
             String img = pr.getImageData();
+            System.out.println(img);
             byte[] imgData = Base64.getDecoder().decode(img);
             ImageQueryer iq = new ImageQueryer("index");
             ArrayList<PhotoResponse> results = iq.query(imgData);
