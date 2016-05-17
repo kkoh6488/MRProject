@@ -97,7 +97,7 @@ public class IRManager : IRManagerBase {
     /// <param name="entity"></param>
     private void SendKnowledgeQuery(string entity)
     {
-        Debug.Log("Sending knowledge query");      
+        Debug.Log("Sending knowledge query for : " + entity);      
 		RESTRequest rr = new RESTRequest (HTTPMethod.GET, KnowledgeQueryCallback);
 		rr.AddParameter ("entity", entity);
 		StartCoroutine(knowledge.sendRequest (rr));
@@ -128,6 +128,7 @@ public class IRManager : IRManagerBase {
     /// </summary>
     /// <returns>True, if the image was captured successfully.</returns>
     private void SubmitImageQuery() {
+        _lastEncoded = null;
         bool result = imgCapture.StoreScreenshotBuffer(Camera.main);
         if (result)
         {
@@ -173,13 +174,13 @@ public class IRManager : IRManagerBase {
         }
         try
         {
-            string response = data;
-            if (response.Equals("[]"))
+            Debug.Log("response:" + data);
+            if (data.Equals("[]"))
             {
                 Debug.Log("No results found.");
                 currentState = AppState.SUBMITCONFIRM;
 			} else {
-				QueryResult[] results = _parser.ParseGroup(response);
+				QueryResult[] results = _parser.ParseGroup(data);
 				content.HandleResults(results);
 				currentState = AppState.IDLE;
 			}

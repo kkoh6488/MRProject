@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Events;
 
 /// <summary>
@@ -9,6 +10,7 @@ public class ContentManager : AppMonoBehaviour {
     public RectTransform bodyRT;
     public Vector2 bodyDisplayPos = Vector2.zero;
     public ContentPanel googleGraphPanel;
+    public Text emptyMessage;
 
     // State variables
     public bool isPanelShown { get; private set; }
@@ -42,6 +44,16 @@ public class ContentManager : AppMonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        if (_lastResults == null)
+        {
+            emptyMessage.gameObject.SetActive(true);
+            bodyScrollContent.gameObject.SetActive(false);
+        }
+        else
+        {
+            emptyMessage.gameObject.SetActive(false);
+            bodyScrollContent.gameObject.SetActive(true);
+        }
         if (_newResults)
         {
             DisplayMainResult(_lastResults[0]);
