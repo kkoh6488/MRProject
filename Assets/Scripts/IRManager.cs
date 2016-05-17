@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Net;
 using UnityEngine;
+using RESTUtils;
+using SimpleJSON;
 
 public enum AppState
 {
@@ -19,6 +21,10 @@ public class IRManager : IRManagerBase {
     IImageCapture imgCapture;
     public WindowManager window;
     public ContentManager content;
+	private RESTClient knowledge;
+	private RESTClient query;
+	private RESTClient submit;
+
 
     private IParser<QueryResult> _parser;
 
@@ -29,19 +35,21 @@ public class IRManager : IRManagerBase {
     Uri queryUri, submitUri, knowledgeUri;
     string _lastEncoded;
 
+
     // State variables
     
     void Awake() {
         imgCapture = new ImageCapture();
         uri = string.Format("http://{0}:{1}", serverIp, port);
-        queryUri = new Uri(uri + "/query");
-        submitUri = new Uri(uri + "/submit");
-        knowledgeUri = new Uri(uri + "/knowledge");
+		query = new RESTClient(uri + "/query");
+		submit = new RESTClient(uri + "/submit");
+		knowledge = new RESTClient(uri + "/knowledge");
         _parser = new ResultParser();
     }
 
     // Use this for initialization
     void Start () {
+		
 	}
 
     // Update is called once per frame
@@ -54,7 +62,7 @@ public class IRManager : IRManagerBase {
         } 
         else if (Input.GetKeyDown(KeyCode.G))
         {
-            SendKnowledgeQuery("Apple");
+			SendKnowledgeQuery("Apple (fruit)");
         }
         #endif
     }
@@ -90,10 +98,9 @@ public class IRManager : IRManagerBase {
     private void SendKnowledgeQuery(string entity)
     {
         Debug.Log("Sending knowledge query");      
-        WebClient client = new WebClient();
-        Uri queryUri = new Uri(knowledgeUri + "?entity=" + entity);
-        client.DownloadStringAsync(queryUri);
-        client.DownloadStringCompleted += new DownloadStringCompletedEventHandler(KnowledgeQueryCallback);
+		RESTRequest rr = new RESTRequest (HTTPMethod.GET, KnowledgeQueryCallback);
+		rr.AddParameter ("entity", entity);
+		StartCoroutine(knowledge.sendRequest (rr));
     }
 
     /// <summary>
@@ -101,16 +108,17 @@ public class IRManager : IRManagerBase {
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void KnowledgeQueryCallback(object sender, DownloadStringCompletedEventArgs e)
+	private void KnowledgeQueryCallback(String data)
     {
-        if (e.Result == null)
+		Debug.Log (data);
+		if (data.Contains("\"error\""))
         {
             window.SetAlert("The server could not be contacted");
             currentState = AppState.ERROR;
         }
         else
         {
-            QueryResult[] results = _parser.ParseGroup(e.Result);
+            QueryResult[] results = _parser.ParseGroup(data);
             content.HandleResults(results);
         }
     }
@@ -143,18 +151,21 @@ public class IRManager : IRManagerBase {
         // Send packet to server containing jpeg bytes - to be reassembled on other side.
         Debug.Log("Sending img query");
         Debug.Log(encodedImg);
-        string json = "{\"photorequest\": {\"name\": \"none\", \"imageData\": \"" + encodedImg +"\"}}";
+        string json = "{\"name\": \"none\", \"imageData\": \"" + encodedImg +"\"}";
+		byte[] data = System.Text.UnicodeEncoding.Unicode.GetBytes (json);
         Debug.Log("Json: " + json);
-        WebClient client = new WebClient();
-        client.UploadStringCompleted += new UploadStringCompletedEventHandler(QueryCompleteCallback);
-        client.Headers[HttpRequestHeader.ContentType] = "application/json";
-        client.UploadStringAsync(queryUri, "POST", json);
+		RESTRequest rr = new RESTRequest (HTTPMethod.POST, data, QueryCompleteCallback);
+		StartCoroutine (query.sendRequest (rr));
+//        WebClient client = new WebClient();
+//        client.UploadStringCompleted += new UploadStringCompletedEventHandler(QueryCompleteCallback);
+//        client.Headers[HttpRequestHeader.ContentType] = "application/json";
+//        client.UploadStringAsync(queryUri, "POST", json);
         return "";
     }
 
-    private void QueryCompleteCallback(object sender, UploadStringCompletedEventArgs e)
+	private void QueryCompleteCallback(string data)
     {
-        if (e.Result == null)
+		if (data.Contains("\"error\""))
         {
             window.SetAlert("The server could not be contacted");
             currentState = AppState.ERROR;
@@ -162,12 +173,16 @@ public class IRManager : IRManagerBase {
         }
         try
         {
-            string response = e.Result;
+            string response = data;
             if (response.Equals("[]"))
             {
                 Debug.Log("No results found.");
                 currentState = AppState.SUBMITCONFIRM;
-            }
+			} else {
+				QueryResult[] results = _parser.ParseGroup(response);
+				content.HandleResults(results);
+				currentState = AppState.IDLE;
+			}
         }
         catch (Exception ex)
         {
@@ -182,11 +197,16 @@ public class IRManager : IRManagerBase {
     /// <param name="name">The label to attach to this image.</param>
     private void SendCapturedImagePostRequest(string encodedImg, string name)
     {
-        string json = "{\"photorequest\": {\"name\": \"" + name + "\", \"imageData\": \"" + encodedImg + "\"}}";
-        WebClient client = new WebClient();
-        client.Headers[HttpRequestHeader.ContentType] = "application/json";
-        client.UploadStringCompleted += new UploadStringCompletedEventHandler(SubmitCompleteCallback);
-        client.UploadStringAsync(submitUri, "POST", json);
+        string json = "{\"name\": \"" + name + "\", \"imageData\": \"" + encodedImg + "\"}";
+		byte[] data = System.Text.UnicodeEncoding.Unicode.GetBytes (json);
+
+		RESTRequest rr = new RESTRequest (HTTPMethod.POST, data, SubmitCompleteCallback);
+		StartCoroutine (submit.sendRequest (rr));
+//
+//        WebClient client = new WebClient();
+//        client.Headers[HttpRequestHeader.ContentType] = "application/json";
+//        client.UploadStringCompleted += new UploadStringCompletedEventHandler(SubmitCompleteCallback);
+//        client.UploadStringAsync(submitUri, "POST", json);
     }
 
     /// <summary>
@@ -194,10 +214,11 @@ public class IRManager : IRManagerBase {
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void SubmitCompleteCallback(object sender, UploadStringCompletedEventArgs e)
+	private void SubmitCompleteCallback(string data)
     {
+		Debug.Log ("Data = " + data);
         currentState = AppState.IDLE;
-        string response = e.Result;
+        string response = data;
         if (response.Contains("The server has encountered an error."))
         {
             window.SetAlert(response);
