@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using UnityEngine.Events;
 
 /// <summary>
 /// Handles displaying received query data in the appropriate tabs and menus.
@@ -7,13 +7,16 @@ using System.Collections;
 public class ContentManager : AppMonoBehaviour {
 
     public RectTransform bodyRT;
-    public RectTransform topBarRT;
     public Vector2 bodyDisplayPos = Vector2.zero;
     public ContentPanel googleGraphPanel;
+
+    // State variables
+    public bool isPanelShown { get; private set; }
 
     // Animation variables
     private Vector2 _bodyRTOffscreen;
     private bool _isSlidingIn = false;
+    private bool _isSlidingOut = false;
     private float _minDelta = 0.05f;
     private Vector2 _currVel;
     private float _smoothTime = 0.3f;
@@ -22,10 +25,14 @@ public class ContentManager : AppMonoBehaviour {
     public RectTransform bodyScrollContent;
     private float _imgSizePx = 105f;
     private float _descriptionSizePx = 130f;
-    private float _textRowPx = 32f;
+    private float _textRowPx = 15f;
 
     private QueryResult[] _lastResults;
     private bool _newResults = false;
+
+    // Events
+    public UnityEvent OnPanelShow;
+    public UnityEvent OnPanelHide;
 
     // Use this for initialization
     void Start () {
@@ -39,11 +46,16 @@ public class ContentManager : AppMonoBehaviour {
         {
             DisplayMainResult(_lastResults[0]);
             SlideInResults();
+            _isSlidingOut = false;
             _newResults = false;
         }
 	    if (_isSlidingIn)
         {
             SlideInResults();
+        }
+        else if (_isSlidingOut)
+        {
+            SlideOutResults();
         }
 	}
 
@@ -57,7 +69,6 @@ public class ContentManager : AppMonoBehaviour {
     {
         _isSlidingIn = true;
         bodyRT.anchoredPosition = _bodyRTOffscreen;
-        topBarRT.anchoredPosition = _bodyRTOffscreen;
         AdjustContentPanelHeight(q);
         googleGraphPanel.SetDisplayContent(q);
     }
@@ -91,13 +102,40 @@ public class ContentManager : AppMonoBehaviour {
         if (Vector2.Distance(bodyRT.anchoredPosition, bodyDisplayPos) < _minDelta)
         {
             _isSlidingIn = false;
+            isPanelShown = true;
+            OnPanelShow.Invoke();
             return;
         }
         else
         {
-            //bodyRT.anchoredPosition = Vector2.MoveTowards(bodyRT.anchoredPosition, bodyDisplayPos.anchoredPosition, moveSpeed);
             bodyRT.anchoredPosition = Vector2.SmoothDamp(bodyRT.anchoredPosition, bodyDisplayPos, ref _currVel, _smoothTime);
-            topBarRT.anchoredPosition = Vector2.SmoothDamp(bodyRT.anchoredPosition, bodyDisplayPos, ref _currVel, _smoothTime);
+        }
+    }
+
+    private void SlideOutResults()
+    {
+        if (Vector2.Distance(bodyRT.anchoredPosition, _bodyRTOffscreen) < _minDelta)
+        {
+            _isSlidingOut = false;
+            isPanelShown = false;
+            OnPanelShow.Invoke();
+            return;
+        }
+        else
+        {
+            bodyRT.anchoredPosition = Vector2.SmoothDamp(bodyRT.anchoredPosition, _bodyRTOffscreen, ref _currVel, _smoothTime);
+        }
+    }
+
+    public void TogglePanel()
+    {
+        if (isPanelShown)
+        {
+            _isSlidingOut = true;
+        }
+        else
+        {
+            _isSlidingIn = true;
         }
     }
 }

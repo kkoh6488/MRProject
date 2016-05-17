@@ -5,7 +5,7 @@ public class SelectorGroup : MonoBehaviour {
 
     // Animation variables
     public RectTransform selector;
-    public float moveSpeed = 0.0025f;
+    public float duration = 0.3f;
 
     private bool _isSelectorMoving = false;
     private float _minDelta = 0.005f;
@@ -13,7 +13,6 @@ public class SelectorGroup : MonoBehaviour {
     private SelectorButton _selected;
     private RectTransform _selectedRT;
     private Vector2 _currVel;
-    private float _smoothTime = 0.3f;
 
     // Use this for initialization
     void Start () {
@@ -45,7 +44,7 @@ public class SelectorGroup : MonoBehaviour {
         else
         {
             //selector.anchoredPosition = Vector2.MoveTowards(selector.anchoredPosition, _selectedRT.anchoredPosition, moveSpeed);
-            selector.anchoredPosition = Vector2.SmoothDamp(selector.anchoredPosition, _selectedRT.anchoredPosition, ref _currVel, _smoothTime);
+            selector.anchoredPosition = Vector2.SmoothDamp(selector.anchoredPosition, new Vector2(_selectedRT.anchoredPosition.x, selector.anchoredPosition.y), ref _currVel, duration);
         }
     }
 }
