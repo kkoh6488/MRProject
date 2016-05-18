@@ -15,8 +15,8 @@ public class ContentManager : AppMonoBehaviour {
     }
 
     public RectTransform bodyRT;
-    public Vector2 bodyDisplayPos = Vector2.zero;
-    public ContentPanel googleGraphPanel;
+    public Vector2 bodyDisplayPos;
+    public GoogleGraphPanel googleGraphPanel;
     public RelatedPanel relatedPanel;
     public HistoryPanel historyPanel;
     public Text emptyMessage;
@@ -24,6 +24,7 @@ public class ContentManager : AppMonoBehaviour {
     // State variables
     public bool isPanelShown { get; private set; }
     private ActiveModule _currModule = ActiveModule.GOOGLE;
+    private ActiveModule _lastModule;
 
     // Animation variables
     private Vector2 _bodyRTOffscreen;
@@ -35,9 +36,8 @@ public class ContentManager : AppMonoBehaviour {
 
     // Content size variables
     public RectTransform bodyScrollContent;
-    private float _imgSizePx = 105f;
-    private float _descriptionSizePx = 135f;
-    private float _textRowPx = 15f;
+    private Vector2 _defaultContentSize;
+
 
     private QueryResult[] _lastResults;
     private bool _newResults = false;
@@ -49,6 +49,8 @@ public class ContentManager : AppMonoBehaviour {
     // Use this for initialization
     void Start () {
         _bodyRTOffscreen = bodyRT.anchoredPosition;
+        bodyDisplayPos = _bodyRTOffscreen + new Vector2(150f, 0);
+        _defaultContentSize = bodyScrollContent.sizeDelta;
 	}
 	
 	// Update is called once per frame
@@ -56,20 +58,19 @@ public class ContentManager : AppMonoBehaviour {
         if (_lastResults == null)
         {
             emptyMessage.gameObject.SetActive(true);
-            bodyScrollContent.gameObject.SetActive(false);
         }
         else
         {
             emptyMessage.gameObject.SetActive(false);
-            bodyScrollContent.gameObject.SetActive(true);
         }
         if (_newResults)
         {
+            _currModule = ActiveModule.GOOGLE;
             _newResults = false;
             _isSlidingOut = false;
             DisplayMainResult(_lastResults[0]);
             SlideInResults();
-            _currModule = ActiveModule.GOOGLE;
+            HandleRelatedResults(_lastResults);
         }
 	    if (_isSlidingIn)
         {
@@ -79,7 +80,7 @@ public class ContentManager : AppMonoBehaviour {
         {
             SlideOutResults();
         }
-        SetActiveModulePanel();
+        DisplayActiveModulePanel();
 	}
 
     public void HandleResults(QueryResult[] results)
@@ -88,36 +89,25 @@ public class ContentManager : AppMonoBehaviour {
         _newResults = true;
     }
 
+    
+    public void ShowRelatedResult(int id)
+    {
+        _currModule = ActiveModule.GOOGLE;
+        DisplayActiveModulePanel();
+        googleGraphPanel.SetDisplayContent(_lastResults[id]);
+        bodyScrollContent.anchoredPosition = Vector2.zero;
+    }
+
     private void DisplayMainResult(QueryResult q)
     {
         _isSlidingIn = true;
         bodyRT.anchoredPosition = _bodyRTOffscreen;
-        AdjustContentPanelHeight(q);
         googleGraphPanel.SetDisplayContent(q);
     }
 
-    private void AdjustContentPanelHeight(QueryResult q)
+    private void HandleRelatedResults(QueryResult[] results)
     {
-        Vector2 contentSize = new Vector2(bodyScrollContent.sizeDelta.x, 0);
-        if (q.HasImage())
-        {
-            contentSize += new Vector2(0, _imgSizePx);
-        }
-        if (q.HasTitle())
-        {
-            contentSize += new Vector2(0, _textRowPx);
-        }
-        if (q.HasDescription())
-        {
-            contentSize += new Vector2(0, _descriptionSizePx);
-        }
-        if (q.HasSubtitle())
-        {
-            contentSize += new Vector2(0, _textRowPx);
-        }
-        contentSize += new Vector2(0, _textRowPx * (q.fields.Count));
-        bodyScrollContent.sizeDelta = contentSize;
-        Debug.Log("Setting content size as " + contentSize);
+        relatedPanel.HandleRelatedResults(results);
     }
 
     private void SlideInResults()
@@ -164,13 +154,22 @@ public class ContentManager : AppMonoBehaviour {
         {
             _currModule = ActiveModule.HISTORY;
         }
+        bodyScrollContent.anchoredPosition = Vector2.zero;
     }
 
-    private void SetActiveModulePanel()
+    private void DisplayActiveModulePanel()
     {
         if (_currModule == ActiveModule.GOOGLE)
         {
-            googleGraphPanel.gameObject.SetActive(true);
+            if (_lastResults == null)
+            {
+                googleGraphPanel.gameObject.SetActive(false);
+            }
+            else
+            {
+                googleGraphPanel.gameObject.SetActive(true);
+                bodyScrollContent.sizeDelta = new Vector2(_defaultContentSize.x, googleGraphPanel.contentHeight);
+            }
             relatedPanel.gameObject.SetActive(false);
             historyPanel.gameObject.SetActive(false);
         }
@@ -179,12 +178,14 @@ public class ContentManager : AppMonoBehaviour {
             googleGraphPanel.gameObject.SetActive(false);
             relatedPanel.gameObject.SetActive(true);
             historyPanel.gameObject.SetActive(false);
+            bodyScrollContent.sizeDelta = new Vector2(_defaultContentSize.x, relatedPanel.contentHeight);
         }
         else
         {
             googleGraphPanel.gameObject.SetActive(false);
             relatedPanel.gameObject.SetActive(false);
             historyPanel.gameObject.SetActive(true);
+            //bodyScrollContent.sizeDelta = new Vector2(_defaultContentSize.x, relatedPanel.contentHeight);
         }
     }
 

@@ -28,10 +28,16 @@ public class GoogleGraphPanel : ContentPanel {
     public Text title;
     public Text subtitle;
     public Text description;
-    public Image[] subimages;
     public GameObject fieldPrefab;
     public Transform fieldParent;
     public Image img;
+    public UrlButton urlButton;
+
+    public float contentHeight;
+    private Vector2 _defaultContentSize;
+    private float _imgSizePx = 105f;
+    private float _descriptionSizePx = 135f;
+    private float _textRowPx = 15f;
 
     private float _imgHeight;
     private float _imgWidth;
@@ -58,12 +64,36 @@ public class GoogleGraphPanel : ContentPanel {
         }
 	}
 
+    private void AdjustContentPanelHeight(QueryResult q)
+    {
+        float height = 0;
+        if (q.HasImage())
+        {
+            height += _imgSizePx;
+        }
+        if (q.HasTitle())
+        {
+            height +=  _textRowPx;
+        }
+        if (q.HasDescription())
+        {
+            height += _descriptionSizePx;
+        }
+        if (q.HasSubtitle())
+        {
+            height += _textRowPx;
+        }
+        contentHeight = height;
+        Debug.Log("Setting content size as " + height);
+    }
+
     /// <summary>
     /// Displays the given query result in the Google Graph content panel.
     /// </summary>
     /// <param name="q">The query result to be displayed.</param>
     public override void SetDisplayContent(QueryResult q)
     {
+        AdjustContentPanelHeight(q);
         if (!IsImageCached(q.title))
         {
             StartCoroutine(LoadImageFromURL(q.imgUrl, q.title));
@@ -76,6 +106,7 @@ public class GoogleGraphPanel : ContentPanel {
         subtitle.text = q.subtitle;
         description.text = q.description;
         Vector2 fieldStartPos = Vector2.zero;
+        urlButton.url = q.wikiUrl;
         int fieldCounter = 0;
         foreach (string s in q.fields.Keys)
         {
