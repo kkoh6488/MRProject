@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class SelectorGroup : MonoBehaviour {
 
@@ -43,7 +42,6 @@ public class SelectorGroup : MonoBehaviour {
         }
         else
         {
-            //selector.anchoredPosition = Vector2.MoveTowards(selector.anchoredPosition, _selectedRT.anchoredPosition, moveSpeed);
             selector.anchoredPosition = Vector2.SmoothDamp(selector.anchoredPosition, new Vector2(_selectedRT.anchoredPosition.x, selector.anchoredPosition.y), ref _currVel, duration);
         }
     }

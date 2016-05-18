@@ -12,7 +12,7 @@
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
+    <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
     <CompilerResponseFile></CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>Android:13</UnityBuildTarget>
@@ -61,24 +61,39 @@
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>Assets\Plugins\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\ExpandableImage.cs" />
+    <Compile Include="Assets\HistoryPanel.cs" />
+    <Compile Include="Assets\RelatedPanel.cs" />
     <Compile Include="Assets\RotatingTouchCube.cs" />
     <Compile Include="Assets\Scripts\AppMonoBehaviour.cs" />
-    <Compile Include="Assets\Scripts\CaptureButton.cs" />
-    <Compile Include="Assets\Scripts\ContentManager.cs" />
-    <Compile Include="Assets\Scripts\ContentPanel.cs" />
-    <Compile Include="Assets\Scripts\GoogleGraphPanel.cs" />
     <Compile Include="Assets\Scripts\IManager.cs" />
     <Compile Include="Assets\Scripts\IRManager.cs" />
     <Compile Include="Assets\Scripts\IRManagerBase.cs" />
     <Compile Include="Assets\Scripts\ImageCapture\CameraTexture.cs" />
     <Compile Include="Assets\Scripts\ImageCapture\IImageCapture.cs" />
     <Compile Include="Assets\Scripts\ImageCapture\ImageCapture.cs" />
-    <Compile Include="Assets\Scripts\InputGUI.cs" />
-    <Compile Include="Assets\Scripts\QueryResult.cs" />
-    <Compile Include="Assets\Scripts\SelectorButton.cs" />
-    <Compile Include="Assets\Scripts\SelectorGroup.cs" />
+    <Compile Include="Assets\Scripts\Query\IParser.cs" />
+    <Compile Include="Assets\Scripts\Query\QueryResult.cs" />
+    <Compile Include="Assets\Scripts\Query\ResultParser.cs" />
+    <Compile Include="Assets\Scripts\UI\CaptureButton.cs" />
+    <Compile Include="Assets\Scripts\UI\ContentManager.cs" />
+    <Compile Include="Assets\Scripts\UI\ContentPanel.cs" />
+    <Compile Include="Assets\Scripts\UI\GoogleGraphPanel.cs" />
+    <Compile Include="Assets\Scripts\UI\InputGUI.cs" />
+    <Compile Include="Assets\Scripts\UI\SelectorButton.cs" />
+    <Compile Include="Assets\Scripts\UI\SelectorGroup.cs" />
+    <Compile Include="Assets\Scripts\UI\WindowManager.cs" />
+    <Compile Include="Assets\Scripts\WebRequests\JSON.cs" />
+    <Compile Include="Assets\Scripts\WebRequests\RESTClient.cs" />
+    <Compile Include="Assets\Scripts\WebRequests\RESTRequest.cs" />
+    <Compile Include="Assets\ServerSettingsButton.cs" />
+    <Compile Include="Assets\SubmitField.cs" />
+    <Compile Include="Assets\ToggleableIcon.cs" />
     <Compile Include="Assets\TouchManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />

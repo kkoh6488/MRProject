@@ -7,13 +7,23 @@ using UnityEngine.Events;
 /// </summary>
 public class ContentManager : AppMonoBehaviour {
 
+    private enum ActiveModule
+    {
+        GOOGLE = 0,
+        RELATED = 1,
+        HISTORY = 2,
+    }
+
     public RectTransform bodyRT;
     public Vector2 bodyDisplayPos = Vector2.zero;
     public ContentPanel googleGraphPanel;
+    public RelatedPanel relatedPanel;
+    public HistoryPanel historyPanel;
     public Text emptyMessage;
 
     // State variables
     public bool isPanelShown { get; private set; }
+    private ActiveModule _currModule = ActiveModule.GOOGLE;
 
     // Animation variables
     private Vector2 _bodyRTOffscreen;
@@ -26,7 +36,7 @@ public class ContentManager : AppMonoBehaviour {
     // Content size variables
     public RectTransform bodyScrollContent;
     private float _imgSizePx = 105f;
-    private float _descriptionSizePx = 130f;
+    private float _descriptionSizePx = 135f;
     private float _textRowPx = 15f;
 
     private QueryResult[] _lastResults;
@@ -39,7 +49,6 @@ public class ContentManager : AppMonoBehaviour {
     // Use this for initialization
     void Start () {
         _bodyRTOffscreen = bodyRT.anchoredPosition;
-	
 	}
 	
 	// Update is called once per frame
@@ -56,10 +65,11 @@ public class ContentManager : AppMonoBehaviour {
         }
         if (_newResults)
         {
+            _newResults = false;
+            _isSlidingOut = false;
             DisplayMainResult(_lastResults[0]);
             SlideInResults();
-            _isSlidingOut = false;
-            _newResults = false;
+            _currModule = ActiveModule.GOOGLE;
         }
 	    if (_isSlidingIn)
         {
@@ -69,6 +79,7 @@ public class ContentManager : AppMonoBehaviour {
         {
             SlideOutResults();
         }
+        SetActiveModulePanel();
 	}
 
     public void HandleResults(QueryResult[] results)
@@ -136,6 +147,44 @@ public class ContentManager : AppMonoBehaviour {
         else
         {
             bodyRT.anchoredPosition = Vector2.SmoothDamp(bodyRT.anchoredPosition, _bodyRTOffscreen, ref _currVel, _smoothTime);
+        }
+    }
+
+    public void SetActiveContentPanel(int module)
+    {
+        if (module == 0)
+        {
+            _currModule = ActiveModule.GOOGLE;
+        }
+        else if (module == 1)
+        {
+            _currModule = ActiveModule.RELATED;
+        }
+        else
+        {
+            _currModule = ActiveModule.HISTORY;
+        }
+    }
+
+    private void SetActiveModulePanel()
+    {
+        if (_currModule == ActiveModule.GOOGLE)
+        {
+            googleGraphPanel.gameObject.SetActive(true);
+            relatedPanel.gameObject.SetActive(false);
+            historyPanel.gameObject.SetActive(false);
+        }
+        else if (_currModule == ActiveModule.RELATED)
+        {
+            googleGraphPanel.gameObject.SetActive(false);
+            relatedPanel.gameObject.SetActive(true);
+            historyPanel.gameObject.SetActive(false);
+        }
+        else
+        {
+            googleGraphPanel.gameObject.SetActive(false);
+            relatedPanel.gameObject.SetActive(false);
+            historyPanel.gameObject.SetActive(true);
         }
     }
 

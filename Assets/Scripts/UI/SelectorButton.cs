@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
-using System.Collections;
+using UnityEngine.Events;
 
 public class SelectorButton : MonoBehaviour {
 
     public SelectorGroup group;
+
+    public UnityEvent OnSelect;
 
 	// Use this for initialization
 	void Start () {
@@ -18,5 +20,6 @@ public class SelectorButton : MonoBehaviour {
     public void OnClick()
     {
         group.Select(this);
+        OnSelect.Invoke();
     }
 }

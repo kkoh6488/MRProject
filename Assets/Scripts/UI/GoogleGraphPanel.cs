@@ -38,25 +38,21 @@ public class GoogleGraphPanel : ContentPanel {
 
     private float _fieldHeightPx = 30f;
     private Material _imgMat;
-    private string _cachePath;
+    //private string _cachePath;
     Queue<CachedImage> _cacheQueue;
 
     // Use this for initialization
     void Start () {
         _imgMat = imgQuad.material;
-        _cachePath = Application.persistentDataPath + "/";
         _imgWidth = img.rectTransform.sizeDelta.x;
         _imgHeight = img.rectTransform.sizeDelta.y;
         _cacheQueue = new Queue<CachedImage>();
-        //if (!Directory.Exists(_cachePath))
-        //{
-            //Directory.CreateDirectory(_cachePath);
-        //}
+        //_cachePath = Application.persistentDataPath + "/";
 	}
 	
 	// Update is called once per frame
 	void Update () {
-	    if (_cacheQueue.Count > 0)
+        if (_cacheQueue.Count > 0)
         {
             CacheImage(_cacheQueue.Dequeue());
         }
@@ -92,6 +88,7 @@ public class GoogleGraphPanel : ContentPanel {
             newField.transform.GetChild(1).GetComponent<Text>().text = q.fields[s];
             fieldCounter++;
         }
+        Debug.Log("Main Result:" + q);
     }
     
     IEnumerator LoadImageFromURL(string url, string title)
@@ -107,19 +104,19 @@ public class GoogleGraphPanel : ContentPanel {
 
     void CacheImage(CachedImage c)
     {
-        if (File.Exists(_cachePath + c.title))
+        if (File.Exists(Application.persistentDataPath + c.title))
         {
-            File.Delete(_cachePath + c.title);
+            File.Delete(Application.persistentDataPath + c.title);
         }
         Debug.Log("Writing");
-        Debug.Log(_cachePath + c.title);
+        Debug.Log(Application.persistentDataPath + c.title);
         string filename = c.size.y + "x" + c.size.x + "_" + c.title + ".jpg";
-        File.WriteAllBytes(_cachePath + filename, c.bytes);
+        File.WriteAllBytes(Application.persistentDataPath + filename, c.bytes);
     }
 
     void LoadImageFromCache(string title)
     {
-        string filepath = Directory.GetFiles(_cachePath, "*" + title + ".jpg")[0];
+        string filepath = Directory.GetFiles(Application.persistentDataPath, "*" + title + ".jpg")[0];
         Debug.Log("Reading from cache:" + filepath);
         byte[] bytes = File.ReadAllBytes(filepath);
         FileInfo f = new FileInfo(filepath);
@@ -143,7 +140,12 @@ public class GoogleGraphPanel : ContentPanel {
 
     bool IsImageCached(string title)
     {
-        string[] files = System.IO.Directory.GetFiles(_cachePath, "*" + title + ".jpg");
-        return (files.Length > 0);
+        Debug.Log("Title: " + title + " , " + Application.persistentDataPath);
+        string[] files = Directory.GetFiles(Application.persistentDataPath, "*" + title + ".jpg");
+        if (files != null)
+        {
+            return (files.Length > 0);
+        }
+        return false;
     }
 }

@@ -19,10 +19,10 @@ public class ResultParser : IParser<QueryResult>
                 results[i] = jsonToResult(result["result"], score);
             }
             
-            foreach (QueryResult q in results)
-            {
-                Debug.Log(q.ToString());
-            }
+            //foreach (QueryResult q in results)
+            //{
+                //Debug.Log(q.ToString());
+            //}
             return results;
             //JObject first = (JObject)joResponse[0];
             //QueryResult firstResult = jsonToResult((JObject) first["result"], score);

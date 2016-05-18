@@ -39,11 +39,8 @@ public class IRManager : IRManagerBase {
     // State variables
     
     void Awake() {
+        ConfigureURIs();
         imgCapture = new ImageCapture();
-        uri = string.Format("http://{0}:{1}", serverIp, port);
-		query = new RESTClient(uri + "/query");
-		submit = new RESTClient(uri + "/submit");
-		knowledge = new RESTClient(uri + "/knowledge");
         _parser = new ResultParser();
     }
 
@@ -65,6 +62,27 @@ public class IRManager : IRManagerBase {
 			SendKnowledgeQuery("Apple (fruit)");
         }
         #endif
+    }
+
+    private void ConfigureURIs()
+    {
+        uri = string.Format("http://{0}:{1}", serverIp, port);
+        query = new RESTClient(uri + "/query");
+        submit = new RESTClient(uri + "/submit");
+        knowledge = new RESTClient(uri + "/knowledge");
+        Debug.Log("Reconfigured URIs for : " + uri);
+    }
+    
+    /// <summary>
+    /// Public accessor for updating URIs.
+    /// </summary>
+    /// <param name="ip"></param>
+    /// <param name="port"></param>
+    public void SetServerAddress(string ip, int port)
+    {
+        this.serverIp = ip;
+        this.port = port;
+        ConfigureURIs();
     }
 
     #region Inspector API
@@ -113,11 +131,18 @@ public class IRManager : IRManagerBase {
 		Debug.Log (data);
 		if (data.Contains("\"error\""))
         {
-            window.SetAlert("The server could not be contacted");
+            window.SetAlert("The server encountered an error.");
             currentState = AppState.ERROR;
         }
         else
         {
+            if (data.Equals(""))
+            {
+                currentState = AppState.ERROR;
+                Debug.Log("The server could not be contacted");
+                window.SetAlert("The server could not be contacted");
+                return;
+            }
             QueryResult[] results = _parser.ParseGroup(data);
             content.HandleResults(results);
         }
@@ -168,7 +193,7 @@ public class IRManager : IRManagerBase {
     {
 		if (data.Contains("\"error\""))
         {
-            window.SetAlert("The server could not be contacted");
+            window.SetAlert("The server encountered an error");
             currentState = AppState.ERROR;
             return;
         }
@@ -180,9 +205,17 @@ public class IRManager : IRManagerBase {
                 Debug.Log("No results found.");
                 currentState = AppState.SUBMITCONFIRM;
 			} else {
-				QueryResult[] results = _parser.ParseGroup(data);
-				content.HandleResults(results);
-				currentState = AppState.IDLE;
+                if (data.Equals(""))
+                {
+                    window.SetAlert("The server could not be contacted");
+                    currentState = AppState.ERROR;
+                }
+                else
+                {
+				    QueryResult[] results = _parser.ParseGroup(data);
+				    content.HandleResults(results);
+				    currentState = AppState.IDLE;
+                }
 			}
         }
         catch (Exception ex)
@@ -227,6 +260,7 @@ public class IRManager : IRManagerBase {
             return;
         }
         Debug.Log("Post result: " + response);
+        window.SetAlert(response);
     }
 
     #endregion
