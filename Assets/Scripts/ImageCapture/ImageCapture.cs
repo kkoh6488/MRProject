@@ -34,7 +34,8 @@ public class ImageCapture : IImageCapture {
     public bool StoreScreenshotBuffer(Camera cam) {
         rt = new RenderTexture(Width, Height, 24);
         cam.targetTexture = rt;
-        cam.cullingMask = LayerMask.NameToLayer("CameraFeed");
+        int temp = cam.cullingMask;
+        cam.cullingMask = 1 << LayerMask.NameToLayer("CameraFeed");
         cam.Render();
         tempTexture = new Texture2D(Width, Height, TextureFormat.ARGB32, false);
         RenderTexture.active = rt;
@@ -42,7 +43,7 @@ public class ImageCapture : IImageCapture {
         cam.targetTexture = null;
         RenderTexture.active = null;
         Debug.Log("Captured image");
-        cam.cullingMask = LayerMask.NameToLayer("Everything");
+        cam.cullingMask = temp;
         return true;
     }
 
@@ -104,6 +105,7 @@ public class ImageCapture : IImageCapture {
         {
             byte[] jpgBytes = tempTexture.EncodeToJPG();
             Debug.Log("Jpg bytes length: " + jpgBytes.Length);
+            File.WriteAllBytes("test.jpg", jpgBytes);
             return Convert.ToBase64String(jpgBytes).Replace(" ", "");
         }
         return null;
