@@ -18,6 +18,7 @@ public enum AppState
 /// </summary>
 public class IRManager : IRManagerBase {
 
+    public string testLabel;
     IImageCapture imgCapture;
     public WindowManager window;
     public ContentManager content;
@@ -59,7 +60,13 @@ public class IRManager : IRManagerBase {
         } 
         else if (Input.GetKeyDown(KeyCode.G))
         {
-			SendKnowledgeQuery("Apple (fruit)");
+			SendKnowledgeQuery(testLabel);
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            imgCapture.StoreScreenshotBuffer(Camera.main);
+            _lastEncoded = imgCapture.GetScreenshotBufferToJPGBase64();
+            SendSubmitQuery(testLabel);
         }
         #endif
     }
