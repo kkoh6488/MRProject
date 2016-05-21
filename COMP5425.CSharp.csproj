@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="Assets\ExpandableImage.cs" />
     <Compile Include="Assets\HistoryPanel.cs" />
+    <Compile Include="Assets\RelatedEntry.cs" />
     <Compile Include="Assets\RelatedPanel.cs" />
     <Compile Include="Assets\RotatingTouchCube.cs" />
     <Compile Include="Assets\Scripts\AppMonoBehaviour.cs" />
@@ -95,6 +96,7 @@
     <Compile Include="Assets\SubmitField.cs" />
     <Compile Include="Assets\ToggleableIcon.cs" />
     <Compile Include="Assets\TouchManager.cs" />
+    <Compile Include="Assets\UrlButton.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

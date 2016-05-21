@@ -1,7 +1,7 @@
-com/comp5425/waila/PhotoRequest.class
-com/comp5425/waila/PhotoResponse.class
-com/comp5425/waila/ImageQueryer.class
-com/comp5425/waila/WailaApplication.class
-com/comp5425/waila/InfoQueryer.class
-com/comp5425/waila/SubmitController.class
-com/comp5425/waila/ImageIndexer.class
+com\comp5425\waila\InfoQueryer.class
+com\comp5425\waila\SubmitController.class
+com\comp5425\waila\PhotoResponse.class
+com\comp5425\waila\PhotoRequest.class
+com\comp5425\waila\ImageQueryer.class
+com\comp5425\waila\WailaApplication.class
+com\comp5425\waila\ImageIndexer.class

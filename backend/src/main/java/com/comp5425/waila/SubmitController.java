@@ -5,6 +5,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -35,6 +39,9 @@ public class SubmitController {
 
             String image = pr.getImageData();
             byte[] imgData = Base64.getDecoder().decode(image);
+            BufferedImage img = ImageIO.read(new ByteArrayInputStream(imgData));
+            ImageIO.write(img, "JPG", new File("test.jpg"));
+            System.out.println("Wrote to file");
             String name = pr.getName();
             ImageIndexer ii = new ImageIndexer("index");
 
@@ -60,6 +67,7 @@ public class SubmitController {
             if (results.size() > 0) {
                 // Query the info for the most relevant
                 InfoQueryer info = new InfoQueryer();
+                System.out.println("Info query");
                 return info.search(results.get(0).getName());
             } else {
                 return new ArrayList<>();
