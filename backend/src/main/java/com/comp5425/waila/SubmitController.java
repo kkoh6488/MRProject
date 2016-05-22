@@ -23,6 +23,31 @@ public class SubmitController {
     private final String submitPath = "/submit";
     private final String queryPath = "/query";
     private final String knowledgePath = "/knowledge";
+    private final String testPath = "/test";
+
+
+    @RequestMapping(value = testPath, method = POST)
+    public String test(@RequestBody PhotoRequest pr) {
+        try {
+            String img = pr.getImageData();
+            System.out.println(img);
+            byte[] imgData = Base64.getDecoder().decode(img);
+            ImageQueryer iq = new ImageQueryer("index");
+            ArrayList<PhotoResponse> results = iq.query(imgData);
+
+            for (PhotoResponse p : results) {
+                System.out.println(String.format("Name: %s, Score; %f", p.getName(), p.getScore()));
+            }
+
+            return results.get(0).getName();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "The server has encountered an error.";
+        }
+
+
+    }
 
     @RequestMapping(value = submitPath, method = POST)
     public String post(@RequestBody PhotoRequest pr) {
@@ -37,8 +62,6 @@ public class SubmitController {
             byte[] imgData = Base64.getDecoder().decode(image);
             String name = pr.getName();
             ImageIndexer ii = new ImageIndexer("index");
-
-
 
             return ii.index(imgData, name);
 
@@ -60,13 +83,18 @@ public class SubmitController {
             if (results.size() > 0) {
                 // Query the info for the most relevant
                 InfoQueryer info = new InfoQueryer();
+
+                for (PhotoResponse p : results) {
+                    System.out.println(String.format("Name: %s, Score; %f", p.getName(), p.getScore()));
+                }
+
+
                 return info.search(results.get(0).getName());
             } else {
                 return new ArrayList<>();
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
             return new ArrayList<>();
         }
 

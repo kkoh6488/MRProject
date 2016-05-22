@@ -1,7 +1,7 @@
 package com.comp5425.waila;
 
 import net.semanticmetadata.lire.builders.DocumentBuilder;
-import net.semanticmetadata.lire.imageanalysis.features.global.FCTH;
+import net.semanticmetadata.lire.imageanalysis.features.global.CEDD;
 import net.semanticmetadata.lire.searchers.GenericFastImageSearcher;
 import net.semanticmetadata.lire.searchers.ImageSearchHits;
 import net.semanticmetadata.lire.searchers.ImageSearcher;
@@ -28,7 +28,7 @@ public class ImageQueryer {
     public ImageQueryer(String indexDirName) throws IOException {
         Directory dir = new SimpleFSDirectory(FileSystems.getDefault().getPath(indexDirName));
         this.ir = DirectoryReader.open(dir);
-        this.searcher = new GenericFastImageSearcher(5, FCTH.class);
+        this.searcher = new GenericFastImageSearcher(5, CEDD.class);
     }
 
     public ArrayList<PhotoResponse> query(byte[] image) throws IOException {
@@ -40,7 +40,7 @@ public class ImageQueryer {
         for (int i = 0; i < ish.length(); i++) {
             String name = ir.document(ish.documentID(i)).getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0];
             double score = ish.score(i);
-            toReturn.add(new PhotoResponse(name, score));
+            if (score < 25.0) toReturn.add(new PhotoResponse(name, score));
         }
 
         ir.close();

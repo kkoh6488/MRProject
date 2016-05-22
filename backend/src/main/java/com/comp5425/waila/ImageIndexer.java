@@ -1,8 +1,8 @@
 package com.comp5425.waila;
 
 import net.semanticmetadata.lire.builders.GlobalDocumentBuilder;
+import net.semanticmetadata.lire.imageanalysis.features.global.CEDD;
 import net.semanticmetadata.lire.imageanalysis.features.global.FCTH;
-import net.semanticmetadata.lire.imageanalysis.features.global.Gabor;
 import net.semanticmetadata.lire.utils.LuceneUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -36,7 +36,7 @@ class ImageIndexer {
      */
     public String index(byte[] imageData, String name) throws Exception {
 
-        GlobalDocumentBuilder gdb = new GlobalDocumentBuilder(Gabor.class);
+        GlobalDocumentBuilder gdb = new GlobalDocumentBuilder(CEDD.class);
         gdb.addExtractor(FCTH.class);
         BufferedImage bi = ImageIO.read(new ByteArrayInputStream(imageData));
 
