@@ -15,12 +15,14 @@ public class ImageCapture : IImageCapture {
 
     private RenderTexture rt;
     private ImgFormat format = ImgFormat.JPG;
-    private const int Width = 1280;
-    private const int Height = 720;
+    private readonly int Width;
+    private readonly int Height;
     private Texture2D tempTexture;
     private string savePath;
 
-    public ImageCapture() {
+    public ImageCapture(int width, int height) {
+        Height = height;
+        Width = width;
         savePath = Application.persistentDataPath + "/";
     }
 

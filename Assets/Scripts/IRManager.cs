@@ -19,6 +19,7 @@ public enum AppState
 public class IRManager : IRManagerBase {
 
     public string testLabel;
+    public Vector2 captureResolution = new Vector2(1280, 720);
     IImageCapture imgCapture;
     public WindowManager window;
     public ContentManager content;
@@ -41,7 +42,7 @@ public class IRManager : IRManagerBase {
     
     void Awake() {
         ConfigureURIs();
-        imgCapture = new ImageCapture();
+        imgCapture = new ImageCapture((int) captureResolution.x, (int) captureResolution.y);
         _parser = new ResultParser();
     }
 

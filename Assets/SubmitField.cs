@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
-using System.Linq;
 
 public class SubmitField : AppMonoBehaviour {
 
@@ -28,12 +26,8 @@ public class SubmitField : AppMonoBehaviour {
             ShowInvalidLabelDialog("Please enter a label.");
             return false;
         }
-        else if (text.All(char.IsLetterOrDigit))
-        {
-            return true;
-        }
-        ShowInvalidLabelDialog("Please use alphanumeric characters.");
-        return false;
+        //ShowInvalidLabelDialog("Please use alphanumeric characters.");
+        return true;
     }
 
     private void ShowInvalidLabelDialog(string msg)
