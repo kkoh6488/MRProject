@@ -36,7 +36,7 @@ public class GoogleGraphPanel : ContentPanel {
     public float contentHeight;
     private Vector2 _defaultContentSize;
     private float _imgSizePx = 105f;
-    private float _descriptionSizePx = 135f;
+    private float _descriptionSizePx = 290f;
     private float _textRowPx = 15f;
 
     private float _imgHeight;
@@ -94,9 +94,19 @@ public class GoogleGraphPanel : ContentPanel {
     public override void SetDisplayContent(QueryResult q)
     {
         AdjustContentPanelHeight(q);
+        gameObject.SetActive(true);
         if (!IsImageCached(q.title))
         {
-            StartCoroutine(LoadImageFromURL(q.imgUrl, q.title));
+            if (Uri.IsWellFormedUriString(q.imgUrl, UriKind.Absolute))
+            {
+                img.gameObject.SetActive(true);
+                StartCoroutine(LoadImageFromURL(q.imgUrl, q.title));
+            }
+            else
+            {
+                Debug.Log("Image url wasn't valid");
+                img.gameObject.SetActive(false);
+            }
         }
         else
         {

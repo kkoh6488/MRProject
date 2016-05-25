@@ -80,8 +80,8 @@ public class ImageCapture : IImageCapture {
             bytes = tempTexture.EncodeToPNG();
             outputPath = savePath + filename + ".png";
         }
-        File.WriteAllBytes(outputPath, bytes);
-        Debug.Log("Saved to file: " + outputPath);
+        //File.WriteAllBytes(outputPath, bytes);
+        //Debug.Log("Saved to file: " + outputPath);
     }
 
     /// <summary>
@@ -106,8 +106,8 @@ public class ImageCapture : IImageCapture {
         if (tempTexture != null)
         {
             byte[] jpgBytes = tempTexture.EncodeToJPG();
-            Debug.Log("Jpg bytes length: " + jpgBytes.Length);
-            File.WriteAllBytes("test.jpg", jpgBytes);
+            //Debug.Log("Jpg bytes length: " + jpgBytes.Length);
+            //File.WriteAllBytes("test.jpg", jpgBytes);
             return Convert.ToBase64String(jpgBytes).Replace(" ", "");
         }
         return null;
