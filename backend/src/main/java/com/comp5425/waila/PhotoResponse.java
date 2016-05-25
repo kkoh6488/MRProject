@@ -4,6 +4,7 @@ package com.comp5425.waila;
  * Created by marcuspaxton on 25/04/2016.
  */
 public class PhotoResponse {
+    // Wrapper class for response object - used by Spring
 
     private String name;
     private double score;

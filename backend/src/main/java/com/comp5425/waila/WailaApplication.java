@@ -7,7 +7,7 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan
 @SpringBootApplication
 public class WailaApplication {
-
+    // Runs the server using Sprint Boot
 	public static void main(String[] args) {
 		SpringApplication.run(WailaApplication.class, args);
 	}

@@ -19,13 +19,15 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 public class SubmitController {
-
+    
+    // Controller class defining API endpoints and behavious
+    
     private final String submitPath = "/submit";
     private final String queryPath = "/query";
     private final String knowledgePath = "/knowledge";
     private final String testPath = "/test";
 
-
+    // Endpoint used for testing image retrieval results
     @RequestMapping(value = testPath, method = POST)
     public String test(@RequestBody PhotoRequest pr) {
         try {
@@ -48,14 +50,10 @@ public class SubmitController {
 
 
     }
-
+    
+    // Handles images being posted for indexing to the server.
     @RequestMapping(value = submitPath, method = POST)
     public String post(@RequestBody PhotoRequest pr) {
-        // this will eventually need to:
-        // - decode base64 encoding of image data
-        // - push byte array into the indexer
-        // - retrieve image identifier, if any
-        // - notify of success or failure.
         try {
 
             String image = pr.getImageData();
@@ -70,7 +68,8 @@ public class SubmitController {
             return "The server has encountered an error.";
         }
     }
-
+    
+    // Queries an image, returning the Google Knowledge Graph results
     @RequestMapping(value = queryPath, method = POST)
     public List<Object> query(@RequestBody PhotoRequest pr) {
         try {
@@ -84,11 +83,6 @@ public class SubmitController {
                 // Query the info for the most relevant
                 InfoQueryer info = new InfoQueryer();
 
-                for (PhotoResponse p : results) {
-                    System.out.println(String.format("Name: %s, Score; %f", p.getName(), p.getScore()));
-                }
-
-
                 return info.search(results.get(0).getName());
             } else {
                 return new ArrayList<>();
@@ -99,7 +93,8 @@ public class SubmitController {
         }
 
     }
-
+    
+    // Test endpoint for querying knowledge graph directly
     @RequestMapping(value = knowledgePath, method = GET )
     public List<Object> query(@RequestParam("entity") String entity) {
         try {

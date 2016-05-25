@@ -24,15 +24,17 @@ public class ImageQueryer {
 
     private ImageSearcher searcher;
     private IndexReader ir;
-
+    
     public ImageQueryer(String indexDirName) throws IOException {
         Directory dir = new SimpleFSDirectory(FileSystems.getDefault().getPath(indexDirName));
+        // Initialise searcher object
         this.ir = DirectoryReader.open(dir);
         this.searcher = new GenericFastImageSearcher(5, CEDD.class);
     }
 
     public ArrayList<PhotoResponse> query(byte[] image) throws IOException {
         BufferedImage bi = ImageIO.read(new ByteArrayInputStream(image));
+        // Get hits
         ImageSearchHits ish = searcher.search(bi, this.ir);
 
         ArrayList<PhotoResponse> toReturn = new ArrayList<>();
@@ -40,6 +42,7 @@ public class ImageQueryer {
         for (int i = 0; i < ish.length(); i++) {
             String name = ir.document(ish.documentID(i)).getValues(DocumentBuilder.FIELD_NAME_IDENTIFIER)[0];
             double score = ish.score(i);
+            // if the score is below 25, it is similar enough - add it to the result list
             if (score < 25.0) toReturn.add(new PhotoResponse(name, score));
         }
 

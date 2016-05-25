@@ -35,17 +35,19 @@ class ImageIndexer {
      * @throws Exception
      */
     public String index(byte[] imageData, String name) throws Exception {
-
+        // Build a Lucene document out of the image
         GlobalDocumentBuilder gdb = new GlobalDocumentBuilder(CEDD.class);
         gdb.addExtractor(FCTH.class);
         BufferedImage bi = ImageIO.read(new ByteArrayInputStream(imageData));
 
         Document document = gdb.createDocument(bi, name);
+        // Add document to index, commit and close
         iw.addDocument(document);
 
         iw.commit();
         iw.close();
-
+        
+        // Return status message
         return "Image just indexed: " + name;
     }
 

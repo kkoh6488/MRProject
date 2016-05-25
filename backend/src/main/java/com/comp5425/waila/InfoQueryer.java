@@ -13,7 +13,7 @@ import java.util.List;
  * Created by marcuspaxton on 25/04/2016.
  */
 public class InfoQueryer {
-
+    // Google API data
     private final String API_KEY = "AIzaSyBibE-WePXOpZ3lWfMXlW2_JDSrIbSYiq0";
     private final String APPLICATION_NAME = "multimedia-retrieval-1292";
 
@@ -30,6 +30,7 @@ public class InfoQueryer {
         request = request.setQuery(entity);
         request = request.setKey(API_KEY);
         SearchResponse response = request.execute();
+        // Get google response and return list of JSON objects
         return response.getItemListElement();
     }
 }

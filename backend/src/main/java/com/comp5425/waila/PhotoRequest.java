@@ -4,7 +4,7 @@ package com.comp5425.waila;
  * Created by marcuspaxton on 22/04/2016.
  */
 public class PhotoRequest {
-
+    // A simple wrapper for the photorequest data - used by Spring
 
     private String imageData;
     private String name;
